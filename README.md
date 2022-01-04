@@ -1,4 +1,4 @@
-# sets
+# hashset
 
-> sets and set functions
+> hashset implementation based on glib HashTables
 

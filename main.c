@@ -8,13 +8,9 @@ int main() {
 
     GHashTable *table = g_hash_table_new(NULL, NULL);
     g_hash_table_insert(table, (gpointer)"a", (gpointer)100);
-    g_hash_table_insert(table, (gpointer)"b", (gpointer)"HALLO");
+    g_hash_table_insert(table, (gpointer)"b", (gpointer)400);
     g_hash_table_insert(table, (gpointer)"c", (gpointer)300);
 
-    // GList *keys = g_hash_table_get_keys(table);
-    // printf("%s\n", (char *)keys);
-    //
-    //
     gpointer key, value;
     GHashTableIter iter;
 
@@ -27,7 +23,7 @@ int main() {
     }
 
 
-    //g_hash_table_destroy(table);
+    g_hash_table_destroy(table);
 
     return EXIT_SUCCESS;
 }
