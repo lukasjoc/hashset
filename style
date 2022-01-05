@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -ex
+
+astyle -s4 --style=google *.c # *.h
+
+rm -rf *.orig
+
