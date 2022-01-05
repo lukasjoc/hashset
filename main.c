@@ -197,6 +197,7 @@ set void_set_cartesian_product(set *SxT, set *S, set *T) {
     g_hash_table_iter_init(&iterS, S->elements);
 
     while(g_hash_table_iter_next(&iterS, &key_S, &value_S)) {
+        // FIXME: !! Memory Leak
         GHashTable *products = g_hash_table_new(NULL, NULL);
         g_hash_table_iter_init(&iterT, T->elements);
 
@@ -279,6 +280,7 @@ int main () {
             NULL, NULL);
 
     C = void_set_cartesian_product(&C, &A, &B);
+
     // void_set_iter_print(&C, "AxB");
     void_set_iter_print_cartesian_product(&C,)
 
