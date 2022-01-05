@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -ex
+
+CC=cc
+LIBS=(
+    $(pkg-config --libs glib-2.0)
+)
+
+CFLAGS=(
+    $(pkg-config --cflags glib-2.0)
+    -std=c99 -Wpedantic
+    -Werror -pedantic-errors
+    -g
+)
+
+"$CC" "${CFLAGS[@]}" -o main main.c "${LIBS[@]}"
+
