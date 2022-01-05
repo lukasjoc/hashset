@@ -23,6 +23,11 @@ typedef struct {
     uint64_t length_max;
 }set;
 
+uint64_t void_set_cardinality(set *S);
+uint64_t void_set_cardinality(set *S) {
+    return S->length;
+}
+
 set void_set_new(set *S, uint64_t length_max);
 set void_set_new(set *S, uint64_t length_max) {
     /*
@@ -188,11 +193,11 @@ int main() {
     E = void_set_new(&E, 0);
     E = void_set_complement(&E, &A, &B);
 
-    printf("Set (A, Normal Set) Length: %llu\n", A.length);
-    printf("Set (B, Normal Set) Length: %llu\n", B.length);
-    printf("Set (C, Intersection) Length: %llu\n", C.length);
-    printf("Set (D, Union) Length: %llu\n", D.length);
-    printf("Set (E, Complement) Length: %llu\n", E.length);
+    printf("Set (A, Normal Set) Length: %llu\n", void_set_cardinality(&A));
+    printf("Set (B, Normal Set) Length: %llu\n", void_set_cardinality(&B));
+    printf("Set (C, Intersection) Length: %llu\n", void_set_cardinality(&C));
+    printf("Set (D, Union) Length: %llu\n", void_set_cardinality(&D));
+    printf("Set (E, Complement) Length: %llu\n", void_set_cardinality(&E));
 
     return EXIT_SUCCESS;
 }
