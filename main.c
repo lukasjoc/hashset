@@ -190,7 +190,7 @@ set void_set_cartesian_product(set *SxT, set *S, set *T) {
     return *SxT;
 }
 
-uint64_t void_set_cartesian_procuct_couples(couple *couples,
+uint64_t void_set_cartesian_product_couples(couple *couples,
         uint64_t couple_length, set *SxT) {
 
     GHashTableIter cartesian_product_iter;
@@ -251,7 +251,7 @@ int main() {
 
     couple couples[((int)couple_length)];
 
-    couple_length = void_set_cartesian_procuct_couples(couples,
+    couple_length = void_set_cartesian_product_couples(couples,
                     couple_length, &F);
 
     printf("AxB = { ");
