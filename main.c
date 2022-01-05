@@ -101,45 +101,98 @@ set void_set_remove_subset(set *S, set *T) {
 
     gpointer key,value;
     GHashTableIter iter;
+
     g_hash_table_iter_init(&iter, S->elements);
-    while(g_hash_table_iter_next (&iter, &key, &value)) {
+
+    while(g_hash_table_iter_next(&iter, &key, &value)) {
         void_set_remove(T, key);
     }
 
     return *T;
 }
 
+set void_set_intersection(set *I, set *S, set *T);
+set void_set_intersection(set *I, set *S, set *T) {
+    gpointer key,value;
+    GHashTableIter iter;
+
+    g_hash_table_iter_init(&iter, S->elements);
+    while(g_hash_table_iter_next (&iter, &key, &value)) {
+        if(g_hash_table_contains(T->elements, key)) {
+            void_set_add(I, key);
+        }
+    }
+
+    return *I;
+}
+
+set void_set_union(set *U, set *S, set *T);
+set void_set_union(set *U, set *S, set *T) {
+    gpointer key_S, value_S;
+    gpointer key_T, value_T;
+    GHashTableIter iterS;
+    GHashTableIter iterT;
+
+    g_hash_table_iter_init(&iterS, S->elements);
+    while(g_hash_table_iter_next(&iterS, &key_S, &value_S)) {
+            void_set_add(U, key_S);
+    }
+
+    g_hash_table_iter_init(&iterT, T->elements);
+    while(g_hash_table_iter_next(&iterT, &key_T, &value_T)) {
+            void_set_add(U, key_T);
+    }
+
+    return *U;
+}
+
+set void_set_complement(set *AC, set *S, set *T);
+set void_set_complement(set *AC, set *S, set *T) {
+    gpointer key, value;
+    GHashTableIter iter;
+
+    g_hash_table_iter_init(&iter, S->elements);
+    while(g_hash_table_iter_next(&iter, &key, &value)) {
+            if(!void_set_contains(T, key)) {
+                void_set_add(AC, key);
+            }
+    }
+
+    return *AC;
+}
+
 
 
 int main() {
-    set A;
+    set A, B, C, D, E;
+
     A = void_set_new(&A, 0);
+    void_set_add(&A, (void *)1);
+    void_set_add(&A, (void *)2);
+    void_set_add(&A, (void *)3);
+    void_set_add(&A, (void *)4);
+    void_set_add(&A, (void *)5);
 
-    void_set_add(&A, (void *)100);
-    void_set_add(&A, (void *)200);
-    void_set_add(&A, (void *)300);
-
-    set B;
     B = void_set_new(&B, 0);
+    void_set_add(&B, (void *)1);
+    void_set_add(&B, (void *)2);
+    void_set_add(&B, (void *)3);
+    void_set_add(&B, (void *)10);
 
-    void_set_add(&B, (void *)700);
-    void_set_add(&B, (void *)2000);
-    void_set_add(&B, (void *)100);
-    void_set_add(&B, (void *)200);
-    void_set_add(&B, (void *)300);
+    C = void_set_new(&C, 0);
+    C = void_set_intersection(&C, &A, &B);
 
+    D = void_set_new(&D, 0);
+    D = void_set_union(&D, &A, &B);
 
-    printf("A contains 200: %d\n", void_set_contains(&A, (void *)200));
-    printf("A contains 1000: %d\n", void_set_contains(&A, (void *)1000));
+    E = void_set_new(&E, 0);
+    E = void_set_complement(&E, &A, &B);
 
-    printf("B contains 700: %d\n", void_set_contains(&B, (void *)700));
-    printf("B contains 1: %d\n", void_set_contains(&B, (void *)1));
-
-    printf("A is subset of B: %d\n", void_set_is_subset(&A, &B));
-    printf("B is subset of A: %d\n", void_set_is_subset(&B, &A));
-
-    B = void_set_remove_subset(&A, &B);
-    printf("B Set length after removing subset A: %llu\n", B.length);
+    printf("Set (A, Normal Set) Length: %llu\n", A.length);
+    printf("Set (B, Normal Set) Length: %llu\n", B.length);
+    printf("Set (C, Intersection) Length: %llu\n", C.length);
+    printf("Set (D, Union) Length: %llu\n", D.length);
+    printf("Set (E, Complement) Length: %llu\n", E.length);
 
     return EXIT_SUCCESS;
 }
