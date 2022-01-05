@@ -20,6 +20,7 @@ typedef struct {
 
     // max size in elements
     uint64_t length_max;
+
 } set;
 
 // A Couple represents an ordered pair of values within
@@ -28,6 +29,11 @@ typedef struct {
     void *a;
     void *b;
 } couple;
+
+void void_set_destroy(set *S) {
+    g_hash_table_destroy(S->elements);
+    S->length = (uint64_t)g_hash_table_size(S->elements);
+}
 
 uint64_t void_set_cardinality(set *S);
 uint64_t void_set_cardinality(set *S) {
@@ -260,6 +266,16 @@ int main() {
         printf("(%d, %d), ", GPOINTER_TO_INT(c.a), GPOINTER_TO_INT(c.b));
     }
     printf("}\n");
+    // ---
+
+    // Destroy Phase
+    void_set_destroy(&A);
+    void_set_destroy(&B);
+    void_set_destroy(&C);
+    void_set_destroy(&D);
+    void_set_destroy(&E);
+    void_set_destroy(&F);
+    // ----
 
     return EXIT_SUCCESS;
 }
