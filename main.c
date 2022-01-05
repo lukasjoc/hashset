@@ -240,11 +240,11 @@ int main() {
     F = void_set_new(&F, 0);
     F = void_set_cartesian_product(&F, &A, &B);
 
-    printf("Set (A, Normal Set) Length: %llu\n", void_set_cardinality(&A));
-    printf("Set (B, Normal Set) Length: %llu\n", void_set_cardinality(&B));
-    printf("Set (C, Intersection) Length: %llu\n", void_set_cardinality(&C));
-    printf("Set (D, Union) Length: %llu\n", void_set_cardinality(&D));
-    printf("Set (E, Complement) Length: %llu\n", void_set_cardinality(&E));
+    printf("Set (A, Normal Set) Length: %" PRIu64 "\n", void_set_cardinality(&A));
+    printf("Set (B, Normal Set) Length: %" PRIu64 "\n", void_set_cardinality(&B));
+    printf("Set (C, Intersection) Length: %" PRIu64 "\n", void_set_cardinality(&C));
+    printf("Set (D, Union) Length: %" PRIu64 "\n", void_set_cardinality(&D));
+    printf("Set (E, Complement) Length: %" PRIu64 "\n", void_set_cardinality(&E));
 
     uint64_t couple_length = CP_COUPLE_LENGTH(void_set_cardinality(&A),
                              void_set_cardinality(&A));
