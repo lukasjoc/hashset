@@ -86,16 +86,11 @@ bool void_set_is_subset(set *S, set *T) {
     GHashTableIter iter;
     g_hash_table_iter_init(&iter, S->elements);
 
-    bool is_subset = false;
+    int c = 0;
     while(g_hash_table_iter_next (&iter, &key, &value)) {
-        if(g_hash_table_contains(T->elements, key)){
-            is_subset = true;
-        }else {
-            is_subset = false;
-        }
+        if(g_hash_table_contains(T->elements, key)) c++;
     }
-
-    return is_subset;
+    return c==S->length;
 }
 
 set void_set_remove_subset(set *S, set *T);
@@ -127,11 +122,11 @@ int main() {
     set B;
     B = void_set_new(&B, 0);
 
+    void_set_add(&B, (void *)700);
+    void_set_add(&B, (void *)2000);
     void_set_add(&B, (void *)100);
     void_set_add(&B, (void *)200);
     void_set_add(&B, (void *)300);
-    void_set_add(&B, (void *)700);
-    void_set_add(&B, (void *)2000);
 
 
     printf("A contains 200: %d\n", void_set_contains(&A, (void *)200));
