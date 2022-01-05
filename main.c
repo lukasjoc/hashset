@@ -12,8 +12,15 @@
 
 // the main definition of the mutable, unordered hashset
 typedef struct {
+
     // All Set Elements
     GHashTable *elements;
+
+    // GHashTable Config
+    GHashFunc hash_func;
+    GEqualFunc key_equal_func;
+    GDestroyNotify key_destroy_func;
+    GDestroyNotify value_destroy_func;
 
     // current size of elements
     uint64_t length;
@@ -30,9 +37,10 @@ typedef struct {
     void *b;
 } couple;
 
-void void_set_destroy(set *S) {
+GDestroyNotify void_set_destroy(set *S) {
     g_hash_table_destroy(S->elements);
-    S->length = (uint64_t)g_hash_table_size(S->elements);
+    S->length = 0;
+    return NULL;
 }
 
 uint64_t void_set_cardinality(set *S);
@@ -51,8 +59,14 @@ bool void_set_contains(set *S, void *element) {
     return (bool)g_hash_table_contains(S->elements, (gconstpointer)element);
 }
 
-set void_set_new(set *S, uint64_t length_max);
-set void_set_new(set *S, uint64_t length_max) {
+//set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
+//        GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
+//        GDestroyNotify value_destroy_func);
+
+set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
+        GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
+        GDestroyNotify value_destroy_func) {
+
     S->elements = g_hash_table_new(NULL, NULL);
     S->length_max = length_max;
     S->length = 0;
@@ -220,7 +234,59 @@ uint64_t void_set_cartesian_product_couples(couple *couples,
     return l;
 }
 
-int main() {
+// TODO: add conversion function parameter
+void void_set_iter_print(set *S, char *set_name) {
+    gpointer key, value;
+    GHashTableIter iter;
+
+    g_hash_table_iter_init(&iter, S->elements);
+    printf("%s = { ", set_name);
+    while(g_hash_table_iter_next(&iter, &key, &value)) {
+        printf("%d ", GPOINTER_TO_INT(key));
+    }
+    printf("}\n");
+
+}
+
+int main () {
+    set A;
+
+    A = void_set_new(&A, 0, &g_direct_hash, &g_direct_equal,
+            // &void_set_destroy, &void_set_destroy );
+            NULL, NULL);
+
+    void_set_add(&A, (void *)1);
+    void_set_add(&A, (void *)2);
+    void_set_iter_print(&A, "A");
+
+
+    set B;
+
+    B = void_set_new(&B, 0, &g_direct_hash, &g_direct_equal,
+            // &void_set_destroy, &void_set_destroy );
+            NULL, NULL);
+
+    void_set_add(&B, (void *)3);
+    void_set_add(&B, (void *)4);
+    void_set_add(&B, (void *)1);
+    void_set_iter_print(&B, "B");
+
+
+    set C;
+
+    C = void_set_new(&C, 0, &g_direct_hash, &g_direct_equal,
+            // &void_set_destroy, &void_set_destroy );
+            NULL, NULL);
+
+    C = void_set_cartesian_product(&C, &A, &B);
+    // void_set_iter_print(&C, "AxB");
+    void_set_iter_print_cartesian_product(&C,)
+
+    return EXIT_SUCCESS;
+}
+
+
+/*int main() {
     set A, B, C, D, E, F, G;
 
     A = void_set_new(&A, 0);
@@ -266,6 +332,7 @@ int main() {
         printf("(%d, %d), ", GPOINTER_TO_INT(c.a), GPOINTER_TO_INT(c.b));
     }
     printf("}\n");
+
     // ---
 
     // Destroy Phase
@@ -278,5 +345,5 @@ int main() {
     // ----
 
     return EXIT_SUCCESS;
-}
+}*/
 
