@@ -51,7 +51,7 @@ uint64_t void_set_cardinality(set *S) {
 bool set_full(set *S);
 bool set_full(set *S) {
     return (bool)((S->length && S->length_max)
-                  && (S->length >= S->length_max));
+            && (S->length >= S->length_max));
 }
 
 bool void_set_contains(set *S, void *element);
@@ -60,15 +60,15 @@ bool void_set_contains(set *S, void *element) {
 }
 
 set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
-                 GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
-                 GDestroyNotify value_destroy_func);
+        GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
+        GDestroyNotify value_destroy_func);
 
 set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
-                 GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
-                 GDestroyNotify value_destroy_func) {
+        GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
+        GDestroyNotify value_destroy_func) {
 
     S->elements = g_hash_table_new_full(hash_func, key_equal_func,
-                                        key_destroy_func, value_destroy_func);
+            key_destroy_func, value_destroy_func);
     S->length_max = length_max;
     S->length = 0;
 
@@ -235,7 +235,6 @@ uint64_t void_set_cartesian_product_couples(couple *couples,
     return l;
 }
 
-// TODO: add conversion function parameter
 void void_set_iter_print(set *S, char *set_name) {
     gpointer key, value;
     GHashTableIter iter;
@@ -243,10 +242,22 @@ void void_set_iter_print(set *S, char *set_name) {
     g_hash_table_iter_init(&iter, S->elements);
     printf("%s = { ", set_name);
     while(g_hash_table_iter_next(&iter, &key, &value)) {
-        printf("%d ", GPOINTER_TO_INT(key));
+        printf("%d, ", GPOINTER_TO_INT(key));
     }
     printf("}\n");
+}
 
+void void_set_iter_print_int_couples(couple *couples, uint64_t couple_length,
+        char *set_name) {
+
+    printf("AxB = { ");
+    for(uint64_t i = 0 ; i < couple_length; i++) {
+        printf("(%d, %d), ",
+                GPOINTER_TO_INT(couples[i].a),
+                GPOINTER_TO_INT(couples[i].b)
+            );
+    }
+    printf("}\n");
 }
 
 int main () {
@@ -263,32 +274,48 @@ int main () {
 
     void_set_add(&B, (void *)3);
     void_set_add(&B, (void *)4);
+    void_set_add(&B, (void *)5);
     void_set_add(&B, (void *)1);
     void_set_iter_print(&B, "B");
 
+    set union_AB;
+    union_AB = void_set_new(&union_AB, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
+    union_AB = void_set_union(&union_AB, &A, &B);
+    void_set_iter_print(&union_AB, "A∪B");
 
     set C;
     C = void_set_new(&C, 0, &g_direct_hash, &g_direct_equal,
-                     NULL, &void_set_hashmap_value_destroy);
+            NULL, &void_set_hashmap_value_destroy);
 
     C = void_set_cartesian_product(&C, &A, &B);
 
     uint64_t couple_length = CP_COUPLE_LENGTH(void_set_cardinality(&A),
-                             void_set_cardinality(&B));
+            void_set_cardinality(&B));
 
     couple couples[((int)couple_length)];
     couple_length = void_set_cartesian_product_couples(couples, couple_length, &C);
 
-    printf("AxB = { ");
-    for(uint64_t i = 0 ; i < couple_length; i++) {
-        couple c = couples[i];
-        printf("(%d, %d), ", GPOINTER_TO_INT(c.a), GPOINTER_TO_INT(c.b));
-    }
-    printf("}\n");
+    void_set_iter_print_int_couples(couples, couple_length, "AxB");
 
+    set complement_AB;
+    complement_AB = void_set_new(&complement_AB, 0, &g_direct_hash,
+                &g_direct_equal, NULL, NULL);
+    complement_AB = void_set_complement(&complement_AB, &A, &B);
+    void_set_iter_print(&complement_AB, "ACB");
+
+    set intersection_AB;
+    intersection_AB = void_set_new(&intersection_AB, 0, &g_direct_hash,
+                &g_direct_equal, NULL, NULL);
+    intersection_AB = void_set_intersection(&intersection_AB, &A, &B);
+    void_set_iter_print(&intersection_AB, "A∩B");
+
+    // ----
     void_set_destroy(&A);
     void_set_destroy(&B);
     void_set_destroy(&C);
+    void_set_destroy(&union_AB);
+    void_set_destroy(&complement_AB);
+    void_set_destroy(&intersection_AB);
 
     return EXIT_SUCCESS;
 }
