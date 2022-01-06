@@ -2,6 +2,11 @@
 
 set -ex
 
+if [ "$1" == "clean" ]; then
+    rm -rf *.dSYM main
+    exit 0;
+fi
+
 CC=cc
 LIBS=(
     $(pkg-config --libs glib-2.0)
@@ -14,5 +19,7 @@ CFLAGS=(
     -g
 )
 
-"$CC" "${CFLAGS[@]}" -o main main.c "${LIBS[@]}"
+# -fsanitize=thread
+
+"$CC" "${CFLAGS[@]}" -o main *.c "${LIBS[@]}"
 
