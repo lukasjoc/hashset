@@ -12,7 +12,6 @@
 
 // the main definition of the mutable, unordered hashset
 typedef struct {
-
     // All Set Elements
     GHashTable *elements;
 
@@ -27,20 +26,23 @@ typedef struct {
 
     // max size in elements
     uint64_t length_max;
-
 } set;
 
 // A Couple represents an ordered pair of values within
 // a set
 typedef struct {
-    void *a;
-    void *b;
+    void *a, *b;
 } couple;
 
-GDestroyNotify void_set_destroy(set *S) {
+void void_set_destroy(set *S) {
     g_hash_table_destroy(S->elements);
     S->length = 0;
-    return NULL;
+}
+
+
+
+void void_set_hashmap_value_destroy(gpointer data) {
+    g_hash_table_destroy(data);
 }
 
 uint64_t void_set_cardinality(set *S);
@@ -51,7 +53,7 @@ uint64_t void_set_cardinality(set *S) {
 bool set_full(set *S);
 bool set_full(set *S) {
     return (bool)((S->length && S->length_max)
-            && (S->length >= S->length_max));
+                  && (S->length >= S->length_max));
 }
 
 bool void_set_contains(set *S, void *element);
@@ -59,13 +61,13 @@ bool void_set_contains(set *S, void *element) {
     return (bool)g_hash_table_contains(S->elements, (gconstpointer)element);
 }
 
-//set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
-//        GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
-//        GDestroyNotify value_destroy_func);
+set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
+                 GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
+                 GDestroyNotify value_destroy_func);
 
 set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
-        GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
-        GDestroyNotify value_destroy_func) {
+                 GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
+                 GDestroyNotify value_destroy_func) {
 
     S->elements = g_hash_table_new(NULL, NULL);
     S->length_max = length_max;
@@ -191,12 +193,12 @@ set void_set_complement(set *Ac, set *S, set *T) {
  *
 TODO: rewrite like so
 SxT.elements = {
-    0 : couple{1,2},
-    1 : couple{1,3},
-    3 : couple{2,2},
-    4 : couple{2,3},
-    5 : couple{3,3},
-    6 : couple{3,2}
+0 : couple{1,2},
+1 : couple{1,3},
+3 : couple{2,2},
+4 : couple{2,3},
+5 : couple{3,3},
+6 : couple{3,2}
 }
 
 TODO: lookup function for key (first elem)
@@ -270,20 +272,14 @@ void void_set_iter_print(set *S, char *set_name) {
 int main () {
     set A;
 
-    A = void_set_new(&A, 0, &g_direct_hash, &g_direct_equal,
-            // &void_set_destroy, &void_set_destroy );
-      NULL, NULL);
-
+    A = void_set_new(&A, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
     void_set_add(&A, (void *)1);
     void_set_add(&A, (void *)2);
     void_set_iter_print(&A, "A");
 
 
     set B;
-
-    B = void_set_new(&B, 0, &g_direct_hash, &g_direct_equal,
-            // &void_set_destroy, &void_set_destroy );
-      NULL, NULL);
+    B = void_set_new(&B, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
 
     void_set_add(&B, (void *)3);
     void_set_add(&B, (void *)4);
@@ -292,19 +288,30 @@ int main () {
 
 
     set C;
-
     C = void_set_new(&C, 0, &g_direct_hash, &g_direct_equal,
-            // &void_set_destroy, &void_set_destroy );
-      NULL, NULL);
+                     NULL, void_set_hashmap_value_destroy);
 
     C = void_set_cartesian_product(&C, &A, &B);
 
-    // void_set_iter_print(&C, "AxB");
-    void_set_iter_print_cartesian_product(&C,)
+    uint64_t couple_length = CP_COUPLE_LENGTH(void_set_cardinality(&A),
+                             void_set_cardinality(&B));
 
-        return EXIT_SUCCESS;
+    couple couples[((int)couple_length)];
+    couple_length = void_set_cartesian_product_couples(couples, couple_length, &C);
+
+    printf("AxB = { ");
+    for(uint64_t i = 0 ; i < couple_length; i++) {
+        couple c = couples[i];
+        printf("(%d, %d), ", GPOINTER_TO_INT(c.a), GPOINTER_TO_INT(c.b));
+    }
+    printf("}\n");
+
+    void_set_destroy(&A);
+    void_set_destroy(&B);
+    void_set_destroy(&C);
+
+    return EXIT_SUCCESS;
 }
-
 
 /*int main() {
   set A, B, C, D, E, F, G;
@@ -362,6 +369,7 @@ void_set_destroy(&C);
 void_set_destroy(&D);
 void_set_destroy(&E);
 void_set_destroy(&F);
+
 // ----
 
 return EXIT_SUCCESS;

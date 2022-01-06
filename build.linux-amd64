@@ -2,6 +2,11 @@
 
 set -ex
 
+if [ "$1" == "clean" ]; then
+    rm -rf *.dSYM main
+    exit 0;
+fi
+
 CC=cc
 LIBS=(
     $(pkg-config --libs glib-2.0)
