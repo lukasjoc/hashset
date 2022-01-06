@@ -19,5 +19,7 @@ CFLAGS=(
     -g
 )
 
+# -fsanitize=thread
+
 "$CC" "${CFLAGS[@]}" -o main main.c "${LIBS[@]}"
 

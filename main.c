@@ -20,6 +20,9 @@ typedef struct {
     GEqualFunc key_equal_func;
     GDestroyNotify key_destroy_func;
     GDestroyNotify value_destroy_func;
+    GHashTableIter iter;
+    gpointer key;
+    gpointer value;
 
     // current size of elements
     uint64_t length;
@@ -69,7 +72,11 @@ set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
 
     S->elements = g_hash_table_new_full(hash_func, key_equal_func,
             key_destroy_func, value_destroy_func);
+
     S->length_max = length_max;
+
+    g_hash_table_iter_init(&S->iter, S->elements);
+
     S->length = 0;
 
     return *S;
@@ -108,13 +115,10 @@ uint64_t void_set_remove(set *S, void *element) {
 
 bool void_set_is_subset(set *S, set *T);
 bool void_set_is_subset(set *S, set *T) {
-    gpointer key,value;
-    GHashTableIter iter;
-    g_hash_table_iter_init(&iter, S->elements);
-
     int c = 0;
-    while(g_hash_table_iter_next (&iter, &key, &value)) {
-        if(g_hash_table_contains(T->elements, key)) c++;
+    g_hash_table_iter_init(&S->iter, S->elements);
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
+        if(g_hash_table_contains(T->elements, S->key)) c++;
     }
     return c==S->length;
 }
@@ -125,13 +129,9 @@ set void_set_remove_subset(set *S, set *T) {
         return *T;
     }
 
-    gpointer key,value;
-    GHashTableIter iter;
-
-    g_hash_table_iter_init(&iter, S->elements);
-
-    while(g_hash_table_iter_next(&iter, &key, &value)) {
-        void_set_remove(T, key);
+    g_hash_table_iter_init(&S->iter, S->elements);
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
+        void_set_remove(T, S->key);
     }
 
     return *T;
@@ -139,34 +139,26 @@ set void_set_remove_subset(set *S, set *T) {
 
 set void_set_intersection(set *I, set *S, set *T);
 set void_set_intersection(set *I, set *S, set *T) {
-    gpointer key,value;
-    GHashTableIter iter;
-
-    g_hash_table_iter_init(&iter, S->elements);
-    while(g_hash_table_iter_next (&iter, &key, &value)) {
-        if(g_hash_table_contains(T->elements, key)) {
-            void_set_add(I, key);
+    g_hash_table_iter_init(&S->iter, S->elements);
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
+        if(g_hash_table_contains(T->elements, S->key)) {
+            void_set_add(I, S->key);
         }
     }
-
     return *I;
 }
 
 set void_set_union(set *U, set *S, set *T);
 set void_set_union(set *U, set *S, set *T) {
-    gpointer key_S, value_S;
-    gpointer key_T, value_T;
-    GHashTableIter iterS;
-    GHashTableIter iterT;
 
-    g_hash_table_iter_init(&iterS, S->elements);
-    while(g_hash_table_iter_next(&iterS, &key_S, &value_S)) {
-        void_set_add(U, key_S);
+    g_hash_table_iter_init(&S->iter, S->elements);
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
+        void_set_add(U, S->key);
     }
 
-    g_hash_table_iter_init(&iterT, T->elements);
-    while(g_hash_table_iter_next(&iterT, &key_T, &value_T)) {
-        void_set_add(U, key_T);
+    g_hash_table_iter_init(&T->iter, T->elements);
+    while(g_hash_table_iter_next(&T->iter, &T->key, &T->value)) {
+        void_set_add(U, T->key);
     }
 
     return *U;
@@ -174,13 +166,10 @@ set void_set_union(set *U, set *S, set *T) {
 
 set void_set_complement(set *Ac, set *S, set *T);
 set void_set_complement(set *Ac, set *S, set *T) {
-    gpointer key, value;
-    GHashTableIter iter;
-
-    g_hash_table_iter_init(&iter, S->elements);
-    while(g_hash_table_iter_next(&iter, &key, &value)) {
-        if(!void_set_contains(T, key)) {
-            void_set_add(Ac, key);
+    g_hash_table_iter_init(&S->iter, S->elements);
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
+        if(!void_set_contains(T, S->key)) {
+            void_set_add(Ac, S->key);
         }
     }
 
@@ -189,23 +178,17 @@ set void_set_complement(set *Ac, set *S, set *T) {
 
 set void_set_cartesian_product(set *SxT, set *S, set *T);
 set void_set_cartesian_product(set *SxT, set *S, set *T) {
-    gpointer key_S, value_S;
-    gpointer key_T, value_T;
+   g_hash_table_iter_init(&S->iter, S->elements);
 
-    GHashTableIter iterS;
-    GHashTableIter iterT;
-
-    g_hash_table_iter_init(&iterS, S->elements);
-
-    while(g_hash_table_iter_next(&iterS, &key_S, &value_S)) {
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
         GHashTable *products = g_hash_table_new(NULL, NULL);
-        g_hash_table_iter_init(&iterT, T->elements);
+        g_hash_table_iter_init(&T->iter, T->elements);
 
-        while(g_hash_table_iter_next(&iterT, &key_T, &value_T)) {
-            g_hash_table_insert(products, (gpointer)key_T, (gpointer)NULL);
+        while(g_hash_table_iter_next(&T->iter, &T->key, &T->value)) {
+            g_hash_table_insert(products, T->key, T->key);
         }
 
-        void_set_add_key_value(SxT, key_S, (void *)products);
+        void_set_add_key_value(SxT, S->key, (void *)products);
     }
 
     return *SxT;
@@ -236,13 +219,10 @@ uint64_t void_set_cartesian_product_couples(couple *couples,
 }
 
 void void_set_iter_print(set *S, char *set_name) {
-    gpointer key, value;
-    GHashTableIter iter;
-
-    g_hash_table_iter_init(&iter, S->elements);
+    g_hash_table_iter_init(&S->iter, S->elements);
     printf("%s = { ", set_name);
-    while(g_hash_table_iter_next(&iter, &key, &value)) {
-        printf("%d, ", GPOINTER_TO_INT(key));
+    while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
+        printf("%d, ", GPOINTER_TO_INT(S->key));
     }
     printf("}\n");
 }
@@ -262,26 +242,27 @@ void void_set_iter_print_int_couples(couple *couples, uint64_t couple_length,
 
 int main () {
     set A;
-
     A = void_set_new(&A, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
-    void_set_add(&A, (void *)1);
-    void_set_add(&A, (void *)2);
+    for(uint64_t i = 0; i < 3000; i=i+20) {
+        void_set_add(&A, (void *)i);
+    }
     void_set_iter_print(&A, "A");
 
 
     set B;
     B = void_set_new(&B, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
 
-    void_set_add(&B, (void *)3);
-    void_set_add(&B, (void *)4);
-    void_set_add(&B, (void *)5);
-    void_set_add(&B, (void *)1);
+    for(uint64_t i = 0; i < 500; i=i+10) {
+        void_set_add(&B, (void *)i);
+    }
     void_set_iter_print(&B, "B");
+
 
     set union_AB;
     union_AB = void_set_new(&union_AB, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
     union_AB = void_set_union(&union_AB, &A, &B);
     void_set_iter_print(&union_AB, "A∪B");
+
 
     set C;
     C = void_set_new(&C, 0, &g_direct_hash, &g_direct_equal,
@@ -297,17 +278,23 @@ int main () {
 
     void_set_iter_print_int_couples(couples, couple_length, "AxB");
 
+
     set complement_AB;
     complement_AB = void_set_new(&complement_AB, 0, &g_direct_hash,
                 &g_direct_equal, NULL, NULL);
     complement_AB = void_set_complement(&complement_AB, &A, &B);
     void_set_iter_print(&complement_AB, "ACB");
 
+
     set intersection_AB;
     intersection_AB = void_set_new(&intersection_AB, 0, &g_direct_hash,
                 &g_direct_equal, NULL, NULL);
+
     intersection_AB = void_set_intersection(&intersection_AB, &A, &B);
     void_set_iter_print(&intersection_AB, "A∩B");
+
+    printf("A is subset of B %d\n", void_set_is_subset(&A, &B));
+    printf("B is subset of A %d\n", void_set_is_subset(&B, &A));
 
     // ----
     void_set_destroy(&A);
