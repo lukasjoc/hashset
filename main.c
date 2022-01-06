@@ -39,8 +39,6 @@ void void_set_destroy(set *S) {
     S->length = 0;
 }
 
-
-
 void void_set_hashmap_value_destroy(gpointer data) {
     g_hash_table_destroy(data);
 }
@@ -69,7 +67,8 @@ set void_set_new(set *S, uint64_t length_max, GHashFunc hash_func,
                  GEqualFunc key_equal_func, GDestroyNotify key_destroy_func,
                  GDestroyNotify value_destroy_func) {
 
-    S->elements = g_hash_table_new(NULL, NULL);
+    S->elements = g_hash_table_new_full(hash_func, key_equal_func,
+                                        key_destroy_func, value_destroy_func);
     S->length_max = length_max;
     S->length = 0;
 
@@ -188,24 +187,6 @@ set void_set_complement(set *Ac, set *S, set *T) {
     return *Ac;
 }
 
-
-/*
- *
-TODO: rewrite like so
-SxT.elements = {
-0 : couple{1,2},
-1 : couple{1,3},
-3 : couple{2,2},
-4 : couple{2,3},
-5 : couple{3,3},
-6 : couple{3,2}
-}
-
-TODO: lookup function for key (first elem)
-this should still be constant because we can directly lookup
-the first value
-
-*/
 set void_set_cartesian_product(set *SxT, set *S, set *T);
 set void_set_cartesian_product(set *SxT, set *S, set *T) {
     gpointer key_S, value_S;
@@ -217,7 +198,6 @@ set void_set_cartesian_product(set *SxT, set *S, set *T) {
     g_hash_table_iter_init(&iterS, S->elements);
 
     while(g_hash_table_iter_next(&iterS, &key_S, &value_S)) {
-        // FIXME: !! Memory Leak (Fix with rewriting to N : couple structure)
         GHashTable *products = g_hash_table_new(NULL, NULL);
         g_hash_table_iter_init(&iterT, T->elements);
 
@@ -289,7 +269,7 @@ int main () {
 
     set C;
     C = void_set_new(&C, 0, &g_direct_hash, &g_direct_equal,
-                     NULL, void_set_hashmap_value_destroy);
+                     NULL, &void_set_hashmap_value_destroy);
 
     C = void_set_cartesian_product(&C, &A, &B);
 
@@ -312,66 +292,4 @@ int main () {
 
     return EXIT_SUCCESS;
 }
-
-/*int main() {
-  set A, B, C, D, E, F, G;
-
-  A = void_set_new(&A, 0);
-  void_set_add(&A, (void *)1);
-  void_set_add(&A, (void *)2);
-  void_set_add(&A, (void *)6);
-
-  B = void_set_new(&B, 0);
-  void_set_add(&B, (void *)1);
-  void_set_add(&B, (void *)2);
-  void_set_add(&B, (void *)4);
-
-
-  C = void_set_new(&C, 0);
-  C = void_set_intersection(&C, &A, &B);
-
-  D = void_set_new(&D, 0);
-  D = void_set_union(&D, &A, &B);
-
-  E = void_set_new(&E, 0);
-  E = void_set_complement(&E, &A, &B);
-
-  F = void_set_new(&F, 0);
-  F = void_set_cartesian_product(&F, &A, &B);
-
-  printf("Set (A, Normal Set) Length: %" PRIu64 "\n", void_set_cardinality(&A));
-  printf("Set (B, Normal Set) Length: %" PRIu64 "\n", void_set_cardinality(&B));
-  printf("Set (C, Intersection) Length: %" PRIu64 "\n", void_set_cardinality(&C));
-  printf("Set (D, Union) Length: %" PRIu64 "\n", void_set_cardinality(&D));
-  printf("Set (E, Complement) Length: %" PRIu64 "\n", void_set_cardinality(&E));
-
-  uint64_t couple_length = CP_COUPLE_LENGTH(void_set_cardinality(&A),
-  void_set_cardinality(&A));
-
-  couple couples[((int)couple_length)];
-
-  couple_length = void_set_cartesian_product_couples(couples,
-  couple_length, &F);
-
-  printf("AxB = { ");
-  for(uint64_t i = 0 ; i < couple_length; i++) {
-  couple c = couples[i];
-  printf("(%d, %d), ", GPOINTER_TO_INT(c.a), GPOINTER_TO_INT(c.b));
-  }
-  printf("}\n");
-
-// ---
-
-// Destroy Phase
-void_set_destroy(&A);
-void_set_destroy(&B);
-void_set_destroy(&C);
-void_set_destroy(&D);
-void_set_destroy(&E);
-void_set_destroy(&F);
-
-// ----
-
-return EXIT_SUCCESS;
-}*/
 

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -ex
+
+readonly target=1000000
+readonly out_file=memcheck_info.linux-amd64
+valgrind --track-origins=yes --leak-check=full \
+	--show-leak-kinds=all -s ./main "$target" &> "$out_file"
+
+ls -larp "$out_file"
+
