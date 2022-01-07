@@ -62,7 +62,7 @@ bool void_set_contains(set *S, void *element);
 
 uint64_t void_set_cardinality(set *S);
 
-bool void_set_is_subset(set *S, set *T);
+bool void_set_is_subset(set *S, set *T, bool strict);
 
 set void_set_intersection(set *I, set *S, set *T);
 
