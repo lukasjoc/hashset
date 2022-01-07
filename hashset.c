@@ -72,17 +72,17 @@ uint64_t void_set_remove(set *S, void *element) {
     return S->length;
 }
 
-bool void_set_is_subset(set *S, set *T) {
+bool void_set_is_subset(set *S, set *T, bool strict) {
     int c = 0;
     g_hash_table_iter_init(&S->iter, S->elements);
     while(g_hash_table_iter_next(&S->iter, &S->key, &S->value)) {
         if(g_hash_table_contains(T->elements, S->key)) c++;
     }
-    return c==S->length;
+    return strict ? c==S->length && c==T->length : c==S->length;
 }
 
 set void_set_remove_subset(set *S, set *T) {
-    if(!void_set_is_subset(S, T)) {
+    if(!void_set_is_subset(S, T, false)) {
         return *T;
     }
 

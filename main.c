@@ -7,7 +7,7 @@
 #include "hashset.h"
 
 int main () {
-    set A;
+    /* set A;
     A = void_set_new(&A, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
     for(uint64_t i = 0; i < 100; i=i+20) {
         void_set_add(&A, (void *)i);
@@ -21,6 +21,29 @@ int main () {
     for(uint64_t i = 0; i < 50; i=i+10) {
         void_set_add(&B, (void *)i);
     }
+    void_set_iter_print(&B, "B"); */
+
+    set A;
+    set B;
+    A = void_set_new(&A, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
+    B = void_set_new(&B, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
+    //for(uint64_t i = 0; i < 100; i=i+20) {
+    //    void_set_add(&A, (void *)i);
+    //    void_set_add(&B, (void *)i);
+    //}
+    //
+    void_set_add(&A, (void *)100);
+    void_set_add(&B, (void *)100);
+    void_set_add(&B, (void *)200);
+    void_set_iter_print(&A, "A");
+
+
+    //set B;
+    //B = void_set_new(&B, 0, &g_direct_hash, &g_direct_equal, NULL, NULL);
+
+    //for(uint64_t i = 0; i < 50; i=i+10) {
+    //    void_set_add(&B, (void *)i);
+    //}
     void_set_iter_print(&B, "B");
 
 
@@ -59,8 +82,8 @@ int main () {
     intersection_AB = void_set_intersection(&intersection_AB, &A, &B);
     void_set_iter_print(&intersection_AB, "A∩B");
 
-    printf("A is subset of B %d\n", void_set_is_subset(&A, &B));
-    printf("B is subset of A %d\n", void_set_is_subset(&B, &A));
+    printf("A is subset of B %d\n", void_set_is_subset(&A, &B, false));
+    printf("A is strict subset of B %d\n", void_set_is_subset(&B, &A, true));
 
     // ----
     void_set_destroy(&A);
